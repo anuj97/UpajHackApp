@@ -1,10 +1,10 @@
 import watson_developer_cloud
-import pywapi
 import datetime
 import time
 from scipy import stats
 import numpy as np
 from sklearn import datasets, linear_model, preprocessing, pipeline
+from sklearn.linear_model import LinearRegression
 from pprint import pprint
 import pandas as pd
 import json
@@ -13,12 +13,23 @@ from bs4 import BeautifulSoup
 
 DATA_GOV_API ='579b464db66ec23bdd000001f4159aa056f849bb6c7922a7a5c2cc99'
 
-conversation = watson_developer_cloud.ConversationV1(
+# Watson developer cloud is deprecated.
+# The user asked to leave it for now. We will mock the object for 3.10 compatibility
+# or use a dummy class to prevent crashes since ConversationV1 was removed in newer versions.
+class DummyWatson:
+    def message(self, workspace_id, input):
+        return DummyWatsonResponse()
 
-    username='6c3fe2ff-40bd-4cc4-968a-a2d5f282e5ec',
-    password='hWIJrde0H551',
-    version='2018-03-08'
-)
+class DummyWatsonResponse:
+    @property
+    def result(self):
+        return {
+            'intents': [{'intent': 'greetings'}],
+            'entities': [],
+            'output': {'text': ['Hello! Watson API is currently disabled.']}
+        }
+
+conversation = DummyWatson()
 
 def get_response(chat):
 
@@ -109,13 +120,11 @@ def weather(location_id):
 
     ''' returns weather conditions for a given location id '''
 
-    weather_data = pywapi.get_weather_from_weather_com(location_id)
-    pprint(weather_data)
-
+    # pywapi is removed, return dummy data to prevent crashes
     response = {}
-    response['temperature'] = "Temperature : " + str(weather_data['current_conditions']['temperature']) + " C"
-    response['humidity'] = "Humidity : " + str(weather_data['current_conditions']['humidity'])
-    response['windspeed'] = "Wind Speed : " + str(weather_data['current_conditions']['wind']['speed'])
+    response['temperature'] = "Temperature : N/A C"
+    response['humidity'] = "Humidity : N/A"
+    response['windspeed'] = "Wind Speed : N/A"
 
     return response
 
@@ -195,8 +204,8 @@ def minimum_support_price_prediction(response):
     x = crop_price_history['year'].tolist()
     y = crop_price_history['price'].tolist()
 
-    x = np.array(x).astype(np.float)
-    y = np.array(y).astype(np.float)
+    x = np.array(x).astype(float)
+    y = np.array(y).astype(float)
 
     slope, intercept, r_value, p_value, std_err = stats.linregress(x,y)
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
-from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.templatetags.static import static
 from . import conversation as cn
 import sys
 import js2py
@@ -79,7 +79,7 @@ def home(request):
 
     data = pd.read_csv('csv_files/rainfall_data.csv')
     data = data.loc[data['SUBDIVISION'] == rain_state]
-    data = data.fillna(data.mean())
+    data = data.fillna(data.mean(numeric_only=True))
 
     for r in data['ANNUAL']:
         rain.append(r)
